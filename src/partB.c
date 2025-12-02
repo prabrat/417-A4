@@ -66,6 +66,20 @@ bool in_between(uint64_t key, uint64_t x, uint64_t y) {
     } 
 }
 
+Node closest_preceding_node(ChordNode *self, uint64_t key) { 
+    for (int i = (self->num_fing - 1); i >= 0; i++) { 
+        Node f = self->fingers[i]; 
+        if ((f.key != 0) && (in_between(f.key, self->id, key))) { 
+            return f;
+        }
+    }
+    Node this; 
+    this.key = self->id; 
+    this.address = self->ip; 
+    this.port = self->port;
+    return this;
+}
+
 Node find_successor_of_chord(ChordNode *self, uint64_t key) { 
     uint64_t succ = self->successor.key;
 
@@ -74,6 +88,7 @@ Node find_successor_of_chord(ChordNode *self, uint64_t key) {
         return self->successor; 
     }
 
-    Node next = find_closest_preceding_finger(self, key); 
+    Node next = closest_preceding_node(self, key); 
     return find_successor(next, key); 
 }
+
