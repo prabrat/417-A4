@@ -12,7 +12,7 @@ typedef struct ChordNode {
     Node predecessor;
     Node successor;
     int num_successors; 
-    Node *all_successor; 
+    Node *all_successors; 
     int num_fing; 
     Node *fingers;
 } ChordNode; 

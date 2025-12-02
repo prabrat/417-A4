@@ -11,7 +11,7 @@ static uint64_t hash_string(const char *str) {
     uint8_t out[20];
     sha1summ_update(ctx, (uint8_t*)str, strlen(str)); 
     sha1sum_finish(ctx, NULL, 0, out); 
-    uint64_t ret = sha1sum_truncated_head(digest); 
+    uint64_t ret = sha1sum_truncated_head(out); 
     sha1sum_destroy(ctx);
     return ret;
 }
@@ -23,7 +23,7 @@ ChordNode *create_chord(uint64_t id, uint32_t ip, uint32_t port, int fingers, in
         node->id = id; 
     } else { 
         snprintf(buf, sizeof(buf), "%u:%u", ip, port); 
-        n->id = hash_string(buf);
+        node->id = hash_string(buf);
     }
     node->ip = ip; 
     node->port = port; 
@@ -59,6 +59,21 @@ void destroy_chord(ChordNode *node) {
 }
 
 bool in_between(uint64_t key, uint64_t x, uint64_t y) { 
-    return x < y ?? ((key > x) && (key <= y)) : ((ket > x) || (key <= y));
+    if (x < y) { 
+        return ((key > x) && (key <= y));
+    } else { 
+        return ((key > x) || (key <= y));
+    } 
 }
 
+Node find_successor_of_chord(ChordNode *self, uint64_t key) { 
+    uint64_t succ = self->successor.key;
+
+    // if id is in between (n, successor] then return the successor 
+    if (in_between(key, self->id, succ)) { 
+        return self->successor; 
+    }
+
+    Node next = find_closest_preceding_finger(self, key); 
+    return find_successor(next, key); 
+}
