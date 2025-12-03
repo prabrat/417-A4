@@ -44,7 +44,7 @@ ChordNode *create_chord(uint64_t id, uint32_t ip, uint32_t port, int fingers, in
         node->fingers[i] = node->successor; 
     }
 
-    node->predecessor.key = -1;
+    node->predecessor.key = 0;
     return node;
 }
 
@@ -70,7 +70,7 @@ Node closest_preceding_node(ChordNode *self, uint64_t key) {
     // Loook at the Find Succ & Closest Preceding Node Snippet for pseudocode
     for (int i = (self->num_fing - 1); i >= 0; i++) { 
         Node f = self->fingers[i]; 
-        if ((f.key != 0) && (in_between(f.key, self->id, key))) { 
+        if ((f.key != 0) && in_between(f.key, self->id, key)) { 
             return f;
         }
     }
@@ -93,14 +93,14 @@ Node find_successor_of_chord(ChordNode *self, uint64_t key) {
 }
 
 void notify_chord(ChordNode *self, Node pred) { 
-    if ((self->predecessor.key == -1) || in_between(pred.key, self->predecessor.key, self->id)) { 
+    if ((self->predecessor.key == 0) || in_between(pred.key, self->predecessor.key, self->id)) { 
         self->predecessor = pred;
     }
 }
 
 void stabilize_chord(ChordNode *self) { 
     Node n = get_predecessor(self->successor);
-    if ((n.key != 0) && (in_between(x.key, self->id, self->successor.key))) { 
+    if ((n.key != 0) && (in_between(n.key, self->id, self->successor.key))) { 
         self->successor = n; 
     }
     Node this; 
@@ -119,15 +119,25 @@ void fix_fingers(ChordNode *self) {
 }
 
 void check_predecessor_of_chord(ChordNode *self) { 
-    if (self->predecessor.key == -1) { 
+    if (self->predecessor.key == 0) { 
         return;
     }
-
     bool alive = check_predecessor(self->predecessor); 
     if (!alive) { 
-        self->predecessor.key = -1;
+        self->predecessor.key = 0;
     }
 }
 
-void update_successor_list(ChordNode *self) { }
+void update_successor_list(ChordNode *self) { 
+    get_successor_list(self->successor, self->all_successors, self->num_successors);
+}
 
+void print_state(ChordNode *self) { 
+    printf("< Self %lu %u %u\n", self->id, self->ip, self->port); 
+    for (int i = 0; i < self->num_successors; i++) { 
+        printf("< Successor [%d] %lu %u %u\n", i+1, self->all_successors[i].key, self->all_successors[i].address, self->all_successors[i].port);
+    }
+    for(int i = 0; i < self->num_fing; i++) { 
+        printf("< Finger [%d] %lu %u %u\n", i+1, self->fingers[i].key, self->fingers[i].address, self->fingers[i].port);
+    }
+}
