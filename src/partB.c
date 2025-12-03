@@ -44,7 +44,7 @@ ChordNode *create_chord(uint64_t id, uint32_t ip, uint32_t port, int fingers, in
         node->fingers[i] = node->successor; 
     }
 
-    node->predecessor.key = 0;
+    node->predecessor.key = -1;
     return node;
 }
 
@@ -67,6 +67,7 @@ bool in_between(uint64_t key, uint64_t x, uint64_t y) {
 }
 
 Node closest_preceding_node(ChordNode *self, uint64_t key) { 
+    // Loook at the Find Succ & Closest Preceding Node Snippet for pseudocode
     for (int i = (self->num_fing - 1); i >= 0; i++) { 
         Node f = self->fingers[i]; 
         if ((f.key != 0) && (in_between(f.key, self->id, key))) { 
@@ -83,12 +84,50 @@ Node closest_preceding_node(ChordNode *self, uint64_t key) {
 Node find_successor_of_chord(ChordNode *self, uint64_t key) { 
     uint64_t succ = self->successor.key;
 
-    // if id is in between (n, successor] then return the successor 
+    // Loook at the Find Succ & Closest Preceding Node Snippet for pseudocode 
     if (in_between(key, self->id, succ)) { 
         return self->successor; 
     }
-
     Node next = closest_preceding_node(self, key); 
     return find_successor(next, key); 
 }
+
+void notify_chord(ChordNode *self, Node pred) { 
+    if ((self->predecessor.key == -1) || in_between(pred.key, self->predecessor.key, self->id)) { 
+        self->predecessor = pred;
+    }
+}
+
+void stabilize_chord(ChordNode *self) { 
+    Node n = get_predecessor(self->successor);
+    if ((n.key != 0) && (in_between(x.key, self->id, self->successor.key))) { 
+        self->successor = n; 
+    }
+    Node this; 
+    this.key = self->id; 
+    this.address = self->ip; 
+    this.port = self->port;
+    notify(self->successor, this); 
+}
+
+void fix_fingers(ChordNode *self) { 
+    uint64_t ring_size = (1ULL << self->num_fing); // Basically just does 2^(num_fing)
+    for (int i = 0; i < self->num_fing; i++) { 
+        uint64_t start = (self->id + (1ULL << i)) % ring_size; 
+        self->fingers[i] = find_successor_of_chord(self, start);
+    }
+}
+
+void check_predecessor_of_chord(ChordNode *self) { 
+    if (self->predecessor.key == -1) { 
+        return;
+    }
+
+    bool alive = check_predecessor(self->predecessor); 
+    if (!alive) { 
+        self->predecessor.key = -1;
+    }
+}
+
+void update_successor_list(ChordNode *self) { }
 
