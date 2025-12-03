@@ -2,7 +2,7 @@ What I've done so far:
 - Created partA.h, partB.h, and partB.c 
 - Added some basic RPC function headers in partA.h 
 - Added function headers for Chord Logic things we need to handle in partB.H 
-- Finished code for create_chord, destroy_chord, and in_between but will finish the rest of the partB functions soon 
+- Finished functions for partB (Not Tested because partA needs to be implemented)
 
 
 # Assignment 4
